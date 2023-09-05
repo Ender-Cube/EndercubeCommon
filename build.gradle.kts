@@ -1,12 +1,10 @@
 plugins {
     id("java-library")
     id("maven-publish")
-    // ShadowJar (https://github.com/johnrengelman/shadow/releases)
-    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "net.endercube"
-version = "1.5.0"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
