@@ -12,6 +12,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * An abstracted interface for SQL designed for Endercube
+ */
 public class SQLWrapper {
 
     private final HikariDataSource dataSource;
@@ -19,6 +22,7 @@ public class SQLWrapper {
     /**
      * An abstracted interface for SQL designed for Endercube
      * @param dataSource the database to use
+     * @throws SQLException when SQL fails
      */
     public SQLWrapper(HikariDataSource dataSource) throws SQLException {
         this.createTable();
@@ -29,7 +33,9 @@ public class SQLWrapper {
      * Adds a time to the database
      *
      * @param player The player the time belongs to
+     * @param course The {@link String} id of the course to look up
      * @param time   The time in milliseconds
+     * @throws SQLException when SQL fails
      */
     public void addTime(Player player, String course, Long time) throws SQLException {
         Connection connection = dataSource.getConnection();
@@ -47,8 +53,10 @@ public class SQLWrapper {
      * Gets the specified players best times ordered by an index
      *
      * @param player player to retrieve data from
+     * @param course The {@link String} id of the course to look up
      * @param index  time to get, 1 for best
      * @return the nth best time of that player
+     * @throws SQLException when SQL fails
      */
     @Nullable
     public Long getTimePlayer(Player player, String course, int index) throws SQLException {
@@ -74,7 +82,9 @@ public class SQLWrapper {
      * Gets the specified players best times ordered by an index
      *
      * @param UUID  player's UUID to retrieve data from
+     * @param course The {@link String} id of the course to look up
      * @param index time to get, 1 for best
+     * @throws SQLException when SQL fails
      * @return the nth best time of that player
      */
     @Nullable
@@ -103,6 +113,7 @@ public class SQLWrapper {
      * @param course The course to get data for
      * @param index  The nth time you want
      * @return The time
+     * @throws SQLException when SQL fails
      */
     @Nullable
     public Long getTimeOverall(String course, int index) throws SQLException {
@@ -129,6 +140,7 @@ public class SQLWrapper {
      * @param course the course to get data for
      * @param index  The nth time you want
      * @return the player's name
+     * @throws SQLException when SQL fails
      */
     @Nullable
     public String getPlayerOverall(String course, int index) throws SQLException {
@@ -154,6 +166,7 @@ public class SQLWrapper {
 
     /**
      * Removes all but the top ten times per player for all players
+     * @throws SQLException when SQL fails
      */
     public void pruneDatabase() throws SQLException {
         Connection connection = dataSource.getConnection();
@@ -178,6 +191,7 @@ public class SQLWrapper {
 
     /**
      * Creates the table - called on class initialisation
+     * @throws SQLException when SQL fails
      */
     private void createTable() throws SQLException {
         Connection connection = dataSource.getConnection();
