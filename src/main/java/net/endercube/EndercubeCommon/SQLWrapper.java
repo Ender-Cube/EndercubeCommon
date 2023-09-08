@@ -176,6 +176,8 @@ public class SQLWrapper {
             ResultSet resultSet = preparedStatement.executeQuery();
             connection.close();
 
+            // We need to increment it even though we can only get one result
+            resultSet.next();
             JsonObject playerNameObject = MojangUtils.fromUuid(resultSet.getString("player"));
 
             if (playerNameObject == null) {
@@ -186,7 +188,7 @@ public class SQLWrapper {
                     .get("name")
                     .getAsString();
         } catch (SQLException e) {
-            logger.error("Failed to get the overall player for " + course);
+            logger.error("Failed to get the overall #" + index + " player for " + course);
             throw new RuntimeException(e);
         }
 
