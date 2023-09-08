@@ -5,6 +5,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import net.minestom.server.entity.Player;
 import net.minestom.server.utils.mojang.MojangUtils;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,15 +20,16 @@ import java.sql.Statement;
 public class SQLWrapper {
 
     private final HikariDataSource dataSource;
+    private final Logger logger;
 
     /**
      * An abstracted interface for SQL designed for Endercube
      * @param dataSource the database to use
-     * @throws SQLException when SQL fails
      */
-    public SQLWrapper(HikariDataSource dataSource) throws SQLException {
-        this.createTable();
+    public SQLWrapper(HikariDataSource dataSource){
         this.dataSource = dataSource;
+        this.logger = LoggerFactory.getLogger(SQLWrapper.class);
+        this.createTable();
     }
 
     /**
@@ -35,18 +38,23 @@ public class SQLWrapper {
      * @param player The player the time belongs to
      * @param course The {@link String} id of the course to look up
      * @param time   The time in milliseconds
-     * @throws SQLException when SQL fails
      */
-    public void addTime(Player player, String course, Long time) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        String sql = "INSERT INTO playerTimes(player,course,time) VALUES(?,?,?)";
+    public void addTime(Player player, String course, Long time) {
+        try {
+            Connection connection = dataSource.getConnection();
+            String sql = "INSERT INTO playerTimes(player,course,time) VALUES(?,?,?)";
 
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, String.valueOf(player.getUuid()));
-        preparedStatement.setString(2, course);
-        preparedStatement.setLong(3, time);
-        preparedStatement.executeUpdate();
-        connection.close();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, String.valueOf(player.getUuid()));
+            preparedStatement.setString(2, course);
+            preparedStatement.setLong(3, time);
+            preparedStatement.executeUpdate();
+            connection.close();
+        } catch (SQLException e) {
+            logger.error("Failed to add time to " + player.getUsername());
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**
@@ -56,26 +64,31 @@ public class SQLWrapper {
      * @param course The {@link String} id of the course to look up
      * @param index  time to get, 1 for best
      * @return the nth best time of that player
-     * @throws SQLException when SQL fails
      */
     @Nullable
-    public Long getTimePlayer(Player player, String course, int index) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        String sql = "SELECT * FROM playerTimes WHERE player = ? AND course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
+    public Long getTimePlayer(Player player, String course, int index) {
+        try {
+            Connection connection = dataSource.getConnection();
+            String sql = "SELECT * FROM playerTimes WHERE player = ? AND course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
 
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, String.valueOf(player.getUuid()));
-        preparedStatement.setString(2, course);
-        preparedStatement.setInt(3, index - 1);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        connection.close();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, String.valueOf(player.getUuid()));
+            preparedStatement.setString(2, course);
+            preparedStatement.setInt(3, index - 1);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            connection.close();
 
-        while (resultSet.next()) {
-            return resultSet.getLong("time");
+            while (resultSet.next()) {
+                return resultSet.getLong("time");
+            }
+
+            // Return null if we found nothing
+            return null;
+        } catch (SQLException e) {
+            logger.error("Failed to get the #" + index + " time for " + player.getUsername() + " on " + course);
+            throw new RuntimeException(e);
         }
 
-        // Return null if we found nothing
-        return null;
     }
 
     /**
@@ -84,27 +97,32 @@ public class SQLWrapper {
      * @param UUID  player's UUID to retrieve data from
      * @param course The {@link String} id of the course to look up
      * @param index time to get, 1 for best
-     * @throws SQLException when SQL fails
      * @return the nth best time of that player
      */
     @Nullable
-    public Long getTimeUUID(String UUID, String course, int index) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        String sql = "SELECT * FROM playerTimes WHERE player = ? AND course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
+    public Long getTimeUUID(String UUID, String course, int index){
+        try {
+            Connection connection = dataSource.getConnection();
+            String sql = "SELECT * FROM playerTimes WHERE player = ? AND course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
 
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, UUID);
-        preparedStatement.setString(2, course);
-        preparedStatement.setInt(3, index - 1);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        connection.close();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, UUID);
+            preparedStatement.setString(2, course);
+            preparedStatement.setInt(3, index - 1);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            connection.close();
 
-        while (resultSet.next()) {
-            return resultSet.getLong("time");
+            while (resultSet.next()) {
+                return resultSet.getLong("time");
+            }
+
+            // Return null if we found nothing
+            return null;
+        } catch (SQLException e) {
+            logger.error("Failed to get " + UUID + "'s #" + index + " time for " + course);
+            throw new RuntimeException(e);
         }
 
-        // Return null if we found nothing
-        return null;
     }
 
     /**
@@ -113,25 +131,30 @@ public class SQLWrapper {
      * @param course The course to get data for
      * @param index  The nth time you want
      * @return The time
-     * @throws SQLException when SQL fails
      */
     @Nullable
-    public Long getTimeOverall(String course, int index) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        String sql = "SELECT * FROM playerTimes WHERE course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
+    public Long getTimeOverall(String course, int index){
+        try {
+            Connection connection = dataSource.getConnection();
+            String sql = "SELECT * FROM playerTimes WHERE course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
 
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, course);
-        preparedStatement.setInt(2, index - 1);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        connection.close();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, course);
+            preparedStatement.setInt(2, index - 1);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            connection.close();
 
-        while (resultSet.next()) {
-            return resultSet.getLong("time");
+            while (resultSet.next()) {
+                return resultSet.getLong("time");
+            }
+
+            // Return null if we found nothing
+            return null;
+        } catch (SQLException e) {
+            logger.error("Failed to get the overall #" + index + " time for " + course);
+            throw new RuntimeException(e);
         }
 
-        // Return null if we found nothing
-        return null;
     }
 
     /**
@@ -140,39 +163,44 @@ public class SQLWrapper {
      * @param course the course to get data for
      * @param index  The nth time you want
      * @return the player's name
-     * @throws SQLException when SQL fails
      */
     @Nullable
-    public String getPlayerOverall(String course, int index) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        String sql = "SELECT * FROM playerTimes WHERE course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
+    public String getPlayerOverall(String course, int index){
+        try {
+            Connection connection = dataSource.getConnection();
+            String sql = "SELECT * FROM playerTimes WHERE course = ? ORDER BY time ASC LIMIT 1 OFFSET ?;";
 
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, course);
-        preparedStatement.setInt(2, index - 1);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        connection.close();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, course);
+            preparedStatement.setInt(2, index - 1);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            connection.close();
 
-        JsonObject playerNameObject = MojangUtils.fromUuid(resultSet.getString("player"));
+            JsonObject playerNameObject = MojangUtils.fromUuid(resultSet.getString("player"));
 
-        if (playerNameObject == null) {
-            return null;
+            if (playerNameObject == null) {
+                return null;
+            }
+
+            return playerNameObject
+                    .get("name")
+                    .getAsString();
+        } catch (SQLException e) {
+            logger.error("Failed to get the overall player for " + course);
+            throw new RuntimeException(e);
         }
 
-        return playerNameObject
-                .get("name")
-                .getAsString();
     }
 
     /**
      * Removes all but the top ten times per player for all players
-     * @throws SQLException when SQL fails
      */
-    public void pruneDatabase() throws SQLException {
-        Connection connection = dataSource.getConnection();
+    public void pruneDatabase(){
+        try {
+            Connection connection = dataSource.getConnection();
 
-        // Thanks, ChatGPT <3
-        String sql = """
+            // Thanks, ChatGPT <3
+            String sql = """
                 DELETE FROM playerTimes
                   WHERE (player, course, time) NOT IN (
                     SELECT player, course, time
@@ -185,17 +213,21 @@ public class SQLWrapper {
                   );
                 """;
 
-        connection.createStatement().execute(sql);
-        connection.close();
+            connection.createStatement().execute(sql);
+            connection.close();
+        } catch (SQLException e) {
+            logger.error("Failed to prune database");
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Creates the table - called on class initialisation
-     * @throws SQLException when SQL fails
      */
-    private void createTable() throws SQLException {
-        Connection connection = dataSource.getConnection();
-        String createTable = """
+    private void createTable() {
+        try {
+            Connection connection = dataSource.getConnection();
+            String createTable = """
                 CREATE TABLE IF NOT EXISTS playerTimes (
                     player text NOT NULL,
                     course text NOT NULL,
@@ -204,8 +236,12 @@ public class SQLWrapper {
                 );
                 """;
 
-        Statement statement = connection.createStatement();
-        statement.execute(createTable);
-        connection.close();
+            Statement statement = connection.createStatement();
+            statement.execute(createTable);
+            connection.close();
+        } catch (SQLException e) {
+            logger.error("Failed to create table");
+            throw new RuntimeException(e);
+        }
     }
 }
