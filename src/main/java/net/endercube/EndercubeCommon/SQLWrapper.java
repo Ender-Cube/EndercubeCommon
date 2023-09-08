@@ -176,13 +176,15 @@ public class SQLWrapper {
             ResultSet resultSet = preparedStatement.executeQuery();
             connection.close();
 
+            // Will cause SQLException if there are less than 10 times
+            if (resultSet == null) {
+                return null;
+            }
             // We need to increment it even though we can only get one result
             resultSet.next();
             JsonObject playerNameObject = MojangUtils.fromUuid(resultSet.getString("player"));
 
-            if (playerNameObject == null) {
-                return null;
-            }
+
 
             return playerNameObject
                     .get("name")
