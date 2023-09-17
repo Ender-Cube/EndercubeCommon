@@ -23,6 +23,12 @@ dependencies {
 
     // MariaDB
     api("org.mariadb.jdbc:mariadb-java-client:3.1.4")
+
+    // Configuration API
+    implementation("org.spongepowered:configurate-hocon:4.1.2")
+
+    // Kyori stuff (Adventure)
+    implementation("net.kyori:adventure-text-minimessage:4.13.1")
 }
 
 java {
