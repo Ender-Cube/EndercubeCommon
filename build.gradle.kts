@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "net.endercube"
-version = "1.1.3"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -37,6 +37,14 @@ publishing {
     publications {
         create<MavenPublication>("EndercubeCommon") {
             from(components["java"])
+        }
+    }
+}
+
+tasks {
+    javadoc {
+        options {
+            (this as CoreJavadocOptions).addStringOption("Xdoclint:none", "-quiet")
         }
     }
 }
