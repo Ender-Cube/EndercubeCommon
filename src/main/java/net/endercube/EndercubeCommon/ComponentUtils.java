@@ -27,7 +27,7 @@ public final class ComponentUtils {
      * @param milliseconds The number of milliseconds
      * @return HH:mm:ss.SSS formatted String
      */
-    public static String toHumanReadableTime(Long milliseconds) {
+    public static String toHumanReadableTime(long milliseconds) {
         Date date = new Date(milliseconds);
 
         // formatter

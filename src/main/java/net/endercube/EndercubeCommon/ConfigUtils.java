@@ -141,32 +141,4 @@ public class ConfigUtils {
         }
         return outArrayList.toArray(new Pos[0]);
     }
-
-//    public void initConfig() {
-//
-//        // Create config directories
-//        if (!Files.exists(getPath("config/worlds/maps"))) {
-//            logger.info("Creating configuration files");
-//
-//            try {
-//                Files.createDirectories(getPath("config/worlds/"));
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//
-//        LOADER = HoconConfigurationLoader.builder()
-//                .path(getPath("config/config.conf"))
-//                .build();
-//
-//        try {
-//            CONFIG = LOADER.load();
-//        } catch (ConfigurateException e) {
-//            System.err.println("An error occurred while loading config.conf: " + e.getMessage());
-//            if (e.getCause() != null) {
-//                e.getCause().printStackTrace();
-//            }
-//            MinecraftServer.stopCleanly();
-//        }
-//    }
 }
