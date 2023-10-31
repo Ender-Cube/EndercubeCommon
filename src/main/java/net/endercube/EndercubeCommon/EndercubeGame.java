@@ -37,6 +37,7 @@ public class EndercubeGame {
     private static final Logger LOGGER;
     private CommentedConfigurationNode config;
     private PlayerProvider PLAYER_PROVIDER;
+    private boolean SQLEnabled = true;
     private ConfigUtils configUtils;
     private SQLWrapper SQL;
 
@@ -85,6 +86,18 @@ public class EndercubeGame {
     }
 
     /**
+     * Should we enable SQL? Default: true
+     *
+     * @param enableSQL a boolean to say if SQL is enabled
+     * @return The builder
+     */
+    public EndercubeGame useSQL(boolean enableSQL) {
+        SQLEnabled = enableSQL;
+
+        return this;
+    }
+
+    /**
      * The main class that starts the server
      */
     public void build() {
@@ -121,9 +134,12 @@ public class EndercubeGame {
         MinecraftServer.getConnectionManager().setPlayerProvider(PLAYER_PROVIDER);
         LOGGER.debug("Set player provider");
 
-        String SQLUsername = configUtils.getOrSetDefault(config.node("database", "mariaDB", "username"), "");
-        String SQLPassword = configUtils.getOrSetDefault(config.node("database", "mariaDB", "password"), "");
-        initSQL(SQLUsername, SQLPassword);
+        if (SQLEnabled) {
+            String SQLUsername = configUtils.getOrSetDefault(config.node("database", "mariaDB", "username"), "");
+            String SQLPassword = configUtils.getOrSetDefault(config.node("database", "mariaDB", "password"), "");
+            initSQL(SQLUsername, SQLPassword);
+        }
+
     }
 
     enum EncryptionMode {
@@ -195,7 +211,10 @@ public class EndercubeGame {
         return configUtils;
     }
 
-    public @NotNull SQLWrapper getSQL() {
+    public @Nullable SQLWrapper getSQL() {
+        if (!SQLEnabled) {
+            return null;
+        }
         return SQL;
     }
 }
