@@ -1,4 +1,4 @@
-package net.endercube.EndercubeCommon;
+package net.endercube.EndercubeCommon.utils;
 
 import io.leangen.geantyref.TypeToken;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -16,7 +16,6 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ConfigUtils {
@@ -27,6 +26,7 @@ public class ConfigUtils {
 
     /**
      * Reads config from disk
+     *
      * @param CONFIG The {@link HoconConfigurationLoader} to use to save your config
      * @param LOADER The {@link HoconConfigurationLoader} to use to save your config
      */
@@ -49,8 +49,7 @@ public class ConfigUtils {
     }
 
     /**
-     *
-     * @param node The {@link ConfigurationNode} to write to
+     * @param node  The {@link ConfigurationNode} to write to
      * @param value The value to write to that node
      * @return a {@link String} containing what the value currently is
      */
@@ -67,6 +66,7 @@ public class ConfigUtils {
 
     /**
      * Reads an {@link ItemStack} from config
+     *
      * @param configNode The {@link ConfigurationNode} to read from
      * @return {@link ItemStack}
      */
@@ -97,6 +97,7 @@ public class ConfigUtils {
 
     /**
      * Gets a single {@link Pos} from config
+     *
      * @param configNode The {@link ConfigurationNode} to read from
      * @return {@link Pos}
      */
@@ -104,7 +105,7 @@ public class ConfigUtils {
     public Pos getPosFromConfig(ConfigurationNode configNode) {
         Float[] pointList;
         try {
-            pointList = configNode.get(new TypeToken<Float[]>() {
+            pointList = configNode.get(new TypeToken<>() {
             });
         } catch (SerializationException e) {
             throw new RuntimeException(e);
@@ -128,6 +129,7 @@ public class ConfigUtils {
 
     /**
      * Returns a list of {@link Pos} from config
+     *
      * @param configNode The {@link ConfigurationNode} to read from
      * @return A list of {@link Pos}
      */

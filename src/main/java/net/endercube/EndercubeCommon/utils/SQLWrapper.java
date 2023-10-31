@@ -1,4 +1,4 @@
-package net.endercube.EndercubeCommon;
+package net.endercube.EndercubeCommon.utils;
 
 import com.google.gson.JsonObject;
 import com.zaxxer.hikari.HikariDataSource;

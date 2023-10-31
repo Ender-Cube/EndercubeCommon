@@ -1,4 +1,4 @@
-package net.endercube.EndercubeCommon;
+package net.endercube.EndercubeCommon.utils;
 
 // Credit: https://www.spigotmc.org/threads/free-code-sending-perfectly-centered-chat-message.95872/
 
