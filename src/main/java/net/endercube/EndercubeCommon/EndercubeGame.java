@@ -38,6 +38,7 @@ public class EndercubeGame {
     private CommentedConfigurationNode config;
     private PlayerProvider PLAYER_PROVIDER;
     private boolean SQLEnabled = true;
+    private String SQLName;
     private ConfigUtils configUtils;
     private SQLWrapper SQL;
 
@@ -93,6 +94,12 @@ public class EndercubeGame {
      */
     public EndercubeGame useSQL(boolean enableSQL) {
         SQLEnabled = enableSQL;
+
+        return this;
+    }
+
+    public EndercubeGame setSQLName(String name) {
+        SQLName = name;
 
         return this;
     }
@@ -191,7 +198,7 @@ public class EndercubeGame {
         dataSource.setJdbcUrl("jdbc:mariadb://mariadb:3306/endercube?createDatabaseIfNotExist=true");
         dataSource.setUsername(username);
         dataSource.setPassword(password);
-        SQL = new SQLWrapper(dataSource);
+        SQL = new SQLWrapper(dataSource, SQLName);
     }
 
     public static Path getPath(String path) {
