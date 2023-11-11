@@ -4,8 +4,10 @@ import io.leangen.geantyref.TypeToken;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +97,20 @@ public class ConfigUtils {
                 .withDisplayName(MiniMessage.miniMessage().deserialize(name));
     }
 
+    @NotNull
+    public Float[] getFloatListFromConfig(ConfigurationNode configNode) {
+        Float[] floats;
+        try {
+            floats = configNode.get(new TypeToken<>() {
+            });
+        } catch (SerializationException e) {
+            logger.warn("Failed to get a float list from config");
+            throw new RuntimeException(e);
+        }
+
+        return floats;
+    }
+
     /**
      * Gets a single {@link Pos} from config
      *
@@ -103,27 +119,15 @@ public class ConfigUtils {
      */
     @Nullable
     public Pos getPosFromConfig(ConfigurationNode configNode) {
-        Float[] pointList;
-        try {
-            pointList = configNode.get(new TypeToken<>() {
-            });
-        } catch (SerializationException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (pointList == null) {
-            return null;
-        }
+        Float[] pointList = getFloatListFromConfig(configNode);
 
         if (pointList.length == 3) {
             return new Pos(pointList[0], pointList[1], pointList[2]);
-        }
-
-        if (pointList.length == 5) {
+        } else if (pointList.length == 5) {
             return new Pos(pointList[0], pointList[1], pointList[2], pointList[3], pointList[4]);
         }
 
-        logger.warn("Position value in config's length is out of bounds");
+        logger.warn("Position value in config's length is out of bounds or blank");
         return null;
     }
 
@@ -143,4 +147,29 @@ public class ConfigUtils {
         }
         return outArrayList.toArray(new Pos[0]);
     }
+
+    @Nullable
+    public Vec getVecFromConfig(ConfigurationNode configNode) {
+        Float[] pointList = getFloatListFromConfig(configNode);
+
+        if (pointList.length == 3) {
+            return new Vec(pointList[0], pointList[1], pointList[2]);
+        }
+
+        logger.warn("Vector value in config's length is out of bounds or blank");
+        return null;
+    }
+
+    @Nullable
+    public Vec[] getVecListFromConfig(ConfigurationNode configNode) {
+        List<Vec> outArrayList = new ArrayList<>();
+
+        // Loop through the list at the specific node and add it to our out array list
+        for (ConfigurationNode currentNode : configNode.childrenList()) {
+            outArrayList.add(getVecFromConfig(currentNode));
+        }
+        return outArrayList.toArray(new Vec[0]);
+    }
+
+
 }
