@@ -1,6 +1,7 @@
 package net.endercube.EndercubeCommon.utils;
 
 import net.minestom.server.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisPooled;
@@ -60,6 +61,7 @@ public class DatabaseWrapper {
      * @param maxRange an {@code int} for the number of results to return
      * @return A {@code List<Tuple>} containing players and their times
      */
+    @Nullable
     public List<Tuple> getLeaderboard(String course, int maxRange) {
         return getLeaderboard(course, 0, maxRange);
 
@@ -71,6 +73,7 @@ public class DatabaseWrapper {
      * @param maxRange an {@code int} for the nth maximum result
      * @return A {@code List<Tuple>} containing players and their times
      */
+    @Nullable
     public List<Tuple> getLeaderboard(String course, int minRange, int maxRange) {
         logger.debug("Getting leaderboard for " + course + " in range " + minRange + " to " + maxRange);
         return jedis.zrangeWithScores(nameSpace + course + ":times", minRange, maxRange);
