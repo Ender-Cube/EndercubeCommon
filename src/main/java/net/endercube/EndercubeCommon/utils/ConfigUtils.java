@@ -33,7 +33,7 @@ public class ConfigUtils {
      * @param LOADER The {@link HoconConfigurationLoader} to use to save your config
      */
     public ConfigUtils(HoconConfigurationLoader LOADER, CommentedConfigurationNode CONFIG) {
-        this.logger = LoggerFactory.getLogger(SQLWrapper.class);
+        this.logger = LoggerFactory.getLogger(ConfigUtils.class);
         this.LOADER = LOADER;
         this.CONFIG = CONFIG;
     }
