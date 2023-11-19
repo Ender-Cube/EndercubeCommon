@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "net.endercube"
-version = "2.4.0"
+version = "3.0.0"
 
 repositories {
     mavenCentral()
@@ -29,6 +29,9 @@ dependencies {
 
     // Kyori stuff (Adventure)
     implementation("net.kyori:adventure-text-minimessage:4.13.1")
+
+    // Redis (Jedis)
+    implementation("redis.clients:jedis:5.0.2")
 }
 
 java {

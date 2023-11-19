@@ -1,10 +1,9 @@
 package net.endercube.EndercubeCommon;
 
-import com.zaxxer.hikari.HikariDataSource;
 import net.endercube.EndercubeCommon.blocks.Sign;
 import net.endercube.EndercubeCommon.blocks.Skull;
 import net.endercube.EndercubeCommon.utils.ConfigUtils;
-import net.endercube.EndercubeCommon.utils.SQLWrapper;
+import net.endercube.EndercubeCommon.utils.DatabaseWrapper;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
@@ -22,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
+import redis.clients.jedis.JedisPooled;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +37,10 @@ public class EndercubeGame {
     private static final Logger LOGGER;
     private CommentedConfigurationNode config;
     private PlayerProvider PLAYER_PROVIDER;
-    private boolean SQLEnabled = true;
-    private String SQLName;
+    private boolean databaseEnabled = true;
+    private String databaseNamespace;
     private ConfigUtils configUtils;
-    private SQLWrapper SQL;
+    private DatabaseWrapper redisDatabaseWrapper;
 
     // Initializes the logger, only on the first initialization of this class
     static {
@@ -87,19 +87,25 @@ public class EndercubeGame {
     }
 
     /**
-     * Should we enable SQL? Default: true
+     * Should we enable the database? Default: true
      *
-     * @param enableSQL a boolean to say if SQL is enabled
+     * @param enableSQL a boolean to say if the database is enabled
      * @return The builder
      */
-    public EndercubeGame useSQL(boolean enableSQL) {
-        SQLEnabled = enableSQL;
+    public EndercubeGame useDatabase(boolean enableSQL) {
+        databaseEnabled = enableSQL;
 
         return this;
     }
 
-    public EndercubeGame setSQLName(String name) {
-        SQLName = name;
+    /**
+     * Set the namespace for the database
+     *
+     * @param name The name to use
+     * @return The builder
+     */
+    public EndercubeGame setDatabaseNamespace(String name) {
+        databaseNamespace = name;
 
         return this;
     }
@@ -141,10 +147,10 @@ public class EndercubeGame {
         MinecraftServer.getConnectionManager().setPlayerProvider(PLAYER_PROVIDER);
         LOGGER.debug("Set player provider");
 
-        if (SQLEnabled) {
-            String SQLUsername = configUtils.getOrSetDefault(config.node("database", "mariaDB", "username"), "");
-            String SQLPassword = configUtils.getOrSetDefault(config.node("database", "mariaDB", "password"), "");
-            initSQL(SQLUsername, SQLPassword);
+        if (databaseEnabled) {
+            String DBHostname = configUtils.getOrSetDefault(config.node("database", "redis", "hostname"), "localhost");
+            int DBPort = Integer.parseInt(configUtils.getOrSetDefault(config.node("database", "redis", "port"), "6379"));
+            redisDatabaseWrapper = new DatabaseWrapper(new JedisPooled(DBHostname, DBPort), databaseNamespace);
         }
 
     }
@@ -193,14 +199,6 @@ public class EndercubeGame {
         configUtils = new ConfigUtils(loader, config);
     }
 
-    private void initSQL(String username, String password) {
-        HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl("jdbc:mariadb://mariadb:3306/endercube?createDatabaseIfNotExist=true");
-        dataSource.setUsername(username);
-        dataSource.setPassword(password);
-        SQL = new SQLWrapper(dataSource, SQLName);
-    }
-
     public static Path getPath(String path) {
         try {
             return Path.of(new File(EndercubeGame.class.getProtectionDomain().getCodeSource().getLocation()
@@ -218,10 +216,10 @@ public class EndercubeGame {
         return configUtils;
     }
 
-    public @Nullable SQLWrapper getSQL() {
-        if (!SQLEnabled) {
+    public @Nullable DatabaseWrapper getRedisDatabaseWrapper() {
+        if (!databaseEnabled) {
             return null;
         }
-        return SQL;
+        return redisDatabaseWrapper;
     }
 }
