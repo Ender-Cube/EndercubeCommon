@@ -41,6 +41,7 @@ public class EndercubeGame {
     private String databaseNamespace;
     private ConfigUtils configUtils;
     private DatabaseWrapper redisDatabaseWrapper;
+    private JedisPooled databaseJedisPool;
 
     // Initializes the logger, only on the first initialization of this class
     static {
@@ -150,7 +151,8 @@ public class EndercubeGame {
         if (databaseEnabled) {
             String DBHostname = configUtils.getOrSetDefault(config.node("database", "redis", "hostname"), "localhost");
             int DBPort = Integer.parseInt(configUtils.getOrSetDefault(config.node("database", "redis", "port"), "6379"));
-            redisDatabaseWrapper = new DatabaseWrapper(new JedisPooled(DBHostname, DBPort), databaseNamespace);
+            databaseJedisPool = new JedisPooled(DBHostname, DBPort);
+            redisDatabaseWrapper = new DatabaseWrapper(databaseJedisPool, databaseNamespace);
         }
 
     }
@@ -221,5 +223,12 @@ public class EndercubeGame {
             return null;
         }
         return redisDatabaseWrapper;
+    }
+
+    public @Nullable JedisPooled getDatabaseJedisPool() {
+        if (!databaseEnabled) {
+            return null;
+        }
+        return databaseJedisPool;
     }
 }
