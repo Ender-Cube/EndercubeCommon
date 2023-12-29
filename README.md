@@ -1,3 +1,5 @@
+This project has been archived in favour of [Ender-Cube/Endercube](https://github.com/Ender-cube/Endercube)
+
 # Endercube Common
 This project contains all the common details between different Endercube projects
 
